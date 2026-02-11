@@ -9,20 +9,10 @@ def A(n: int):
 		return yi <= xi and xj <= yj
 	return Poset((E, f))
 
-# xxx-avoiding permutation bijections exist as DyckWord.to_xxx_avoiding_permutation()
-
-def E_p(pi: Permutation) -> list[list[int]]:
-	n = pi.size()
-	array = [[0 for _ in range(n)] for _ in range(n)]
-	for i in range(1, n):
-		for j in range(n):
-			if pi[j] == i - 1:
-				
-
-# permutation -> array
-# array -> dyck path (peaks at excedances)
-# dyck path -> antichain
-# antichain -> antichain (rowmotion)
-
-# try doing rowmotion directly on dyck paths
-# 312/132-avoiding have a bijection with a binary search tree, try doing rowmotion on them
+def Exc(pi: Permutation):
+	result = set()
+	for i in range(pi.size()):
+		print(f"pi({i + 1}) = {pi[i]}")
+		if pi[i] > i + 1:
+			result.add((i + 1, pi[i] - 1))
+	return result
