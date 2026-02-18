@@ -50,8 +50,10 @@ class FDSWithOrbitmesy(finite_dynamical_systems.FiniteDynamicalSystem):
 		global_avg = mean(averages)
 		return [O for (i, O) in enumerate(self._orbits) if averages[i] == global_avg]
 
-n = 5
+n = 4
 fds = FDSWithOrbitmesy(Permutations(n, avoiding=[3, 2, 1]), rowmotion_for_321_avoiding)
 print(f"Orbitmesic orbits of S_{n}(321) wrt number of descents: {fds.orbitmesic_orbits(lambda x: x.number_of_descents())}")
 print(f"Orbitmesic orbits of S_{n}(321) wrt number of fixed points: {fds.orbitmesic_orbits(lambda x: x.number_of_fixed_points())}")
 print(f"Orbitmesic orbits of S_{n}(321) wrt number of inversions: {fds.orbitmesic_orbits(lambda x: x.number_of_inversions())}")
+
+# try implementing phi (binary tree -> noncrossing permutation) from https://arxiv.org/pdf/2401.14318
