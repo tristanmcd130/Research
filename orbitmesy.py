@@ -50,10 +50,28 @@ class FDSWithOrbitmesy(finite_dynamical_systems.FiniteDynamicalSystem):
 		global_avg = mean(averages)
 		return [O for (i, O) in enumerate(self._orbits) if averages[i] == global_avg]
 
-n = 4
-fds = FDSWithOrbitmesy(Permutations(n, avoiding=[3, 2, 1]), rowmotion_for_321_avoiding)
-print(f"Orbitmesic orbits of S_{n}(321) wrt number of descents: {fds.orbitmesic_orbits(lambda x: x.number_of_descents())}")
-print(f"Orbitmesic orbits of S_{n}(321) wrt number of fixed points: {fds.orbitmesic_orbits(lambda x: x.number_of_fixed_points())}")
-print(f"Orbitmesic orbits of S_{n}(321) wrt number of inversions: {fds.orbitmesic_orbits(lambda x: x.number_of_inversions())}")
+def dyck_path_from_132(pi: Permutation) -> path_tableaux.DyckPath:
+	result = [0]
+	for i in range(pi.size()):
+		larger = 0
+		for j in pi[i + 1 : ]:
+			if j > pi[i]:
+				larger += 1
+		while result[-1] <= larger:
+			result.append(result[-1] + 1)
+		result.append(result[-1] - 1)
+	return path_tableaux.DyckPath(result)
 
-# try implementing phi (binary tree -> noncrossing permutation) from https://arxiv.org/pdf/2401.14318
+def dyck_path_to_321(d: path_tableaux.DyckPath) -> Permutation:
+	peaks = {}
+	for i in range(1, len(d) - 1):
+		if d[i - 1] + 1 == d[i] == d[i + 1] + 1:
+			peaks[i] = d[i]
+	pi = [0 for _ in range((len(d) - 1) // 2)]
+	for (x, y) in peaks.items():
+		pi[(x - y) // 2] = (x + y) // 2
+	unused_x = sorted([x for x in range(len(pi)) if pi[x] == 0])
+	unused_y = sorted([y for y in range(1, len(pi) + 1) if y not in pi])
+	for (x, y) in zip(unused_x, unused_y):
+		pi[x] = y
+	return Permutation(pi)
