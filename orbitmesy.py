@@ -33,7 +33,7 @@ def Exc_inverse(antichain: set, poset) -> Permutation:
 		pi[i - 1] = j
 	return Permutation(pi)
 
-def rowmotion_for_321_avoiding(pi: Permutation) -> Permutation:
+def rowmotion_for_321(pi: Permutation) -> Permutation:
 	# permutation -> antichain (via Exc) -> ideal (all elements <= ones in antichain) -> rowmotion on ideals
 	assert pi.avoids([3, 2, 1]), f"{pi} is not 321-avoiding"
 	poset = A(pi.size() - 1)
@@ -75,9 +75,8 @@ def dyck_path_to_321(d: path_tableaux.DyckPath) -> Permutation:
 	unused_y = sorted([y for y in range(1, len(pi) + 1) if y not in pi])
 	for (x, y) in zip(unused_x, unused_y):
 		pi[x] = y
+	assert Permutation(pi).avoids([3, 2, 1]), f"{pi} is not 321-avoiding (something is wrong)"
 	return Permutation(pi)
-
-# 132 -> dyck path -> 321 -> 321 via rowmotion -> dyck path -> 132
 
 def dyck_path_from_321(pi: Permutation) -> path_tableaux.DyckPath:
 	assert pi.avoids([3, 2, 1]), f"{pi} is not 321-avoiding"
@@ -104,7 +103,25 @@ def dyck_path_from_321(pi: Permutation) -> path_tableaux.DyckPath:
 def dyck_path_to_132(d: path_tableaux.DyckPath) -> Permutation:
 	right_greater = []
 	y = 0
-	for direction in d.to_DyckWord():
-		# for each letter
+	for step in d.to_DyckWord():
+		if step == 1:
+			y += 1
+		else:
+			y -= 1
+			right_greater.append(y)
+	pi = []
+	unused = list(range(1, (len(d) + 1) // 2))
+	for x in right_greater:
+		pi.append(unused.pop(-x - 1))
+	assert Permutation(pi).avoids([1, 3, 2]), f"{pi} is not 132-avoiding (something is wrong)"
+	return Permutation(pi)
 
-print(dyck_path_from_321(Permutation([2, 4, 1, 3, 5, 8, 9, 6, 7])))
+def rowmotion_for_132(pi: Permutation) -> Permutation:
+	# 132 -> dyck path -> 321 -> 321 via rowmotion -> dyck path -> 132
+	return dyck_path_to_132(dyck_path_from_321(rowmotion_for_321(dyck_path_to_321(dyck_path_from_132(pi)))))
+
+n = 1
+while True:
+	fds = FDSWithOrbitmesy(Permutations(n, avoiding=[1, 3, 2]), rowmotion_for_132)
+	print(f"{n}: {fds.orbitmesic_orbits(lambda x: x.number_of_fixed_points())}")
+	n += 1
