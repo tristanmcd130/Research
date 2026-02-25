@@ -51,13 +51,14 @@ class FDSWithOrbitmesy(finite_dynamical_systems.FiniteDynamicalSystem):
 		return [O for (i, O) in enumerate(self._orbits) if averages[i] == global_avg]
 
 def dyck_path_from_132(pi: Permutation) -> path_tableaux.DyckPath:
+	assert pi.avoids([1, 3, 2]), f"{pi} is not 132-avoiding"
 	result = [0]
 	for i in range(pi.size()):
-		larger = 0
+		right_greater = 0
 		for j in pi[i + 1 : ]:
 			if j > pi[i]:
-				larger += 1
-		while result[-1] <= larger:
+				right_greater += 1
+		while result[-1] <= right_greater:
 			result.append(result[-1] + 1)
 		result.append(result[-1] - 1)
 	return path_tableaux.DyckPath(result)
@@ -75,3 +76,35 @@ def dyck_path_to_321(d: path_tableaux.DyckPath) -> Permutation:
 	for (x, y) in zip(unused_x, unused_y):
 		pi[x] = y
 	return Permutation(pi)
+
+# 132 -> dyck path -> 321 -> 321 via rowmotion -> dyck path -> 132
+
+def dyck_path_from_321(pi: Permutation) -> path_tableaux.DyckPath:
+	assert pi.avoids([3, 2, 1]), f"{pi} is not 321-avoiding"
+	excedances = {}
+	for i in range(pi.size()):
+		if pi[i] >= i + 1:
+			excedances[i] = pi[i] # get upper left corner on square
+	word = []
+	(x, y) = (0, 0)
+	for (ex, ey) in excedances.items():
+		while x < ex:
+			word.append(0)
+			x += 1
+		while y < ey:
+			word.append(1)
+			y += 1
+		word.append(0)
+		x += 1
+	while x < pi.size():
+		word.append(0)
+		x += 1
+	return path_tableaux.DyckPath(DyckWord(word))
+
+def dyck_path_to_132(d: path_tableaux.DyckPath) -> Permutation:
+	right_greater = []
+	y = 0
+	for direction in d.to_DyckWord():
+		# for each letter
+
+print(dyck_path_from_321(Permutation([2, 4, 1, 3, 5, 8, 9, 6, 7])))
