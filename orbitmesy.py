@@ -120,8 +120,5 @@ def rowmotion_for_132(pi: Permutation) -> Permutation:
 	# 132 -> dyck path -> 321 -> 321 via rowmotion -> dyck path -> 132
 	return dyck_path_to_132(dyck_path_from_321(rowmotion_for_321(dyck_path_to_321(dyck_path_from_132(pi)))))
 
-n = 1
-while True:
-	fds = FDSWithOrbitmesy(Permutations(n, avoiding=[1, 3, 2]), rowmotion_for_132)
-	print(f"{n}: {fds.orbitmesic_orbits(lambda x: x.number_of_fixed_points())}")
-	n += 1
+# 321 avoiding -> tableaux via rsk -> another tableaux via K_B. after that keep doing K_1 or K_2 until you can do K_B again. find a way to go directly from the permutation represented by the very 1st tableaux to the last one
+# rsk accepts permutations directly
