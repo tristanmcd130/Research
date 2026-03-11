@@ -122,3 +122,102 @@ def rowmotion_for_132(pi: Permutation) -> Permutation:
 
 # 321 avoiding -> tableaux via rsk -> another tableaux via K_B. after that keep doing K_1 or K_2 until you can do K_B again. find a way to go directly from the permutation represented by the very 1st tableaux to the last one
 # rsk accepts permutations directly
+
+def K1(pi: Permutation) -> set[Permutation]:
+	# If x < y < z and pi = x1...yxz..xn, then K1(pi) = x1..yzx...xn
+	results = set()
+	for i in range(len(pi) - 2):
+		y = pi[i]
+		x = pi[i + 1]
+		z = pi[i + 2]
+		if x < y < z:
+			pi_copy = list(pi)
+			pi_copy[i + 1], pi_copy[i + 2] = pi_copy[i + 2], pi_copy[i + 1]
+			results.add(Permutation(pi_copy))
+	return results
+
+def K2(pi: Permutation) -> set[Permutation]:
+	# If x < y < z and pi = x1...xzy..xn, then K1(pi) = x1..zxy...xn
+	results = set()
+	for i in range(len(pi) - 2):
+		x = pi[i]
+		z = pi[i + 1]
+		y = pi[i + 2]
+		if x < y < z:
+			pi_copy = list(pi)
+			pi_copy[i], pi_copy[i + 1] = pi_copy[i + 1], pi_copy[i]
+			results.add(Permutation(pi_copy))
+	return results
+
+def KB(pi: Permutation) -> set[Permutation]:
+	# KB(pi) = K1(pi) ∩ K2(pi)
+	return K1(pi) & K2(pi)
+
+def increasing_subseqs(elements: list, length: int) -> list[list]:
+	if len(elements) < length:
+		return []
+	if length == 0:
+		return [[]]
+	results = []
+	for e in elements:
+		for s in increasing_subseqs([x for x in elements if x > e], length - 1):
+			results.append([e] + s)
+	return results
+
+def no_abc(Q: Tableau) -> bool:
+	assert len(Q) <= 2, f"{Q} must have 1 or 2 rows only"
+	if len(Q) == 2:
+		xyz = increasing_subseqs(range(1, len(Q[0]) + len(Q[1]) + 1), 3)
+		for x, y, z, in xyz:
+			if x in Q[1]:
+				x_col = Q[1].index(x)
+			elif x in Q[0][len(Q[1]) : ]:
+				x_col = Q[0].index(x)
+			else:
+				continue
+			if z in Q[0]:
+				z_col = Q[0].index(z)
+			else:
+				z_col = Q[1].index(z)
+			if y in Q[0]:
+				y_col = Q[0].index(y)
+			else:
+				y_col = Q[1].index(y)
+			if y_col >= z_col > x_col:
+				return False
+	elif len(Q) == 1:
+		xyz = increasing_subseqs(range(1, len(Q[0]) + 1), 3)
+		for x, y, z, in xyz:
+			x_col = Q[0].index(x)
+			z_col = Q[0].index(z)
+			y_col = Q[0].index(y)
+			if y_col >= z_col > x_col:
+				return False
+	return True
+
+def plot_connections(n):
+	avoiding_321 = list(Permutations(n, avoiding=[3, 2, 1]))
+	K1_edges = []
+	K2_edges = []
+	KB_edges = []
+	for pi in avoiding_321:
+		kb = KB(pi)
+		for x in K1(pi) - kb:
+			K1_edges.append((pi, x, "K1"))
+		for x in K2(pi) - kb:
+			K2_edges.append((pi, x, "K2"))
+		for x in kb:
+			KB_edges.append((pi, x, "KB"))
+
+	g = DiGraph([avoiding_321, K1_edges + K2_edges + KB_edges], multiedges=True)
+	g.plot(
+		vertex_colors={
+			"yellow": [pi for pi in avoiding_321 if no_abc(RSK(pi)[1])],
+		},
+		edge_colors={"red": K1_edges, "blue": K2_edges, "green": KB_edges},
+		layout="graphviz",
+		figsize=[24, 24],
+		# graphviz_opts={'splines': 'curved', 'sep': '1.0'}
+	).save("graph.png")
+
+plot_connections(5)
