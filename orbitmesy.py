@@ -122,3 +122,30 @@ def rowmotion_for_132(pi: Permutation) -> Permutation:
 
 # 321 avoiding -> tableaux via rsk -> another tableaux via K_B. after that keep doing K_1 or K_2 until you can do K_B again. find a way to go directly from the permutation represented by the very 1st tableaux to the last one
 # rsk accepts permutations directly
+
+# SD isnt in sage, its defined in the GHOSS25motzkin paper
+
+"""
+RSK is a bijection between S_n and 2 tableaux P and Q.
+Thm: 2 perms have the same P tableau iff they're related by some Knuth moves.
+In that image I made, each component is called a Knuth graph (all connected nodes there share tableau P with shape lambda). In that graph, each node corresponds with a standard tableau (increasing rows and cols) with shape lambda.
+Superstandard tableau: read it top to bottom, left to right as 123456789...
+1 3 5
+2 4
+Lemma: If w goes to v via K1 or KB, swapping numbers in positions i and i + 1, then Q(w) -> Q(v) involves swapping i and i + 1 in the tableaux.
+Another lemma: A superstandard tableau's graph only involves K1 and KB arrows (K2 is possible, but never on its own; you can always also do K1 and thus KB).
+1st row of P will always be the same as the 1st row of the soliton decomposition.
+These are equivalent:
+- P(w) = SD(w)
+- shape of P(w) = shape of SD(w)
+- SD(w) is standard
+In the dominance partial order(???), SD(w) <= P(w).
+If shape of P(w) is:
+x x x x
+x
+x
+x
+then P(w) is good, otherwise it's bad.
+
+Try expanding your code for all of S_5 and not just 321-avoiding (have to add abcd condition to good tableau check), and then swap the directions of all edges.
+"""
