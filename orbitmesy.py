@@ -164,43 +164,53 @@ def increasing_subseqs(elements: list, length: int) -> list[list]:
 			results.append([e] + s)
 	return results
 
-def no_abc(Q: Tableau) -> bool:
-	assert len(Q) <= 2, f"{Q} must have 1 or 2 rows only"
-	if len(Q) == 2:
-		xyz = increasing_subseqs(range(1, len(Q[0]) + len(Q[1]) + 1), 3)
-		for x, y, z, in xyz:
-			if x in Q[1]:
-				x_col = Q[1].index(x)
-			elif x in Q[0][len(Q[1]) : ]:
-				x_col = Q[0].index(x)
-			else:
-				continue
-			if z in Q[0]:
-				z_col = Q[0].index(z)
-			else:
-				z_col = Q[1].index(z)
-			if y in Q[0]:
-				y_col = Q[0].index(y)
-			else:
-				y_col = Q[1].index(y)
-			if y_col >= z_col > x_col:
-				return False
-	elif len(Q) == 1:
-		xyz = increasing_subseqs(range(1, len(Q[0]) + 1), 3)
-		for x, y, z, in xyz:
-			x_col = Q[0].index(x)
-			z_col = Q[0].index(z)
-			y_col = Q[0].index(y)
-			if y_col >= z_col > x_col:
-				return False
-	return True
+def row_index(rows: list[list], x) -> int:
+	for i in range(len(rows)):
+		if x in rows[i]:
+			return i
+	raise ValueError(f"{x} not in {rows}")
+
+def abc(Q: Tableau) -> bool:
+	"""
+	A tableau has an abc pattern if there are 3 numbers x, y, and z such that:
+	1. x < y < z
+	2. x is at the bottom of its column
+	3. z is to the right of x (but not necessarily in the same row)
+	4. y is in the same column as z or to the right of it
+	"""
+	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))] # "transpose" of Q to help see if x is at the bottom of a column
+	for x, y, z, in increasing_subseqs(range(1, Q.size() + 1), 3):
+		x_row = row_index(Q_T, x)
+		y_row = row_index(Q_T, y)
+		z_row = row_index(Q_T, z)
+		if Q_T[x_row][-1] == x and z_row > x_row and y_row >= z_row:
+			return True
+	return False
+
+def abcd(Q: Tableau) -> bool:
+	"""
+	A tableau has an abcd pattern if there are 4 numbers x, y, z, and w such that:
+	1. x < y < z < w
+	2. x is not at the bottom of its column
+	3. w is right below x
+	4. z is somewhere to the right of x
+	5. y is in the same column as z or to the right of it
+	"""
+	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))]
+	for x, y, z, w in increasing_subseqs(range(1, Q.size() + 1), 4):
+		x_row = row_index(Q_T, x)
+		y_row = row_index(Q_T, y)
+		z_row = row_index(Q_T, z)
+		if Q_T[x_row][-1] != x and Q_T[x_row][Q_T[x_row].index(x) + 1] == w and z_row > x_row and y_row >= z_row:
+			return True
+	return False
 
 def plot_connections(n):
-	avoiding_321 = list(Permutations(n, avoiding=[3, 2, 1]))
+	S_n = list(Permutations(n))
 	K1_edges = []
 	K2_edges = []
 	KB_edges = []
-	for pi in avoiding_321:
+	for pi in S_n:
 		kb = KB(pi)
 		for x in K1(pi) - kb:
 			K1_edges.append((x, pi, "K1"))
@@ -209,14 +219,14 @@ def plot_connections(n):
 		for x in kb:
 			KB_edges.append((x, pi, "KB"))
 
-	g = DiGraph([avoiding_321, K1_edges + K2_edges + KB_edges], multiedges=True)
+	g = DiGraph([S_n, K1_edges + K2_edges + KB_edges], multiedges=True)
 	g.plot(
 		vertex_colors={
-			"yellow": [pi for pi in avoiding_321 if no_abc(RSK(pi)[1])],
+			"yellow": [pi for pi in S_n if not abc(RSK(pi)[1]) and not abcd(RSK(pi)[1])],
 		},
 		edge_colors={"red": K1_edges, "blue": K2_edges, "green": KB_edges},
 		layout="graphviz",
-		figsize=[24, 24],
+		figsize=[96, 96],
 		# graphviz_opts={'splines': 'curved', 'sep': '1.0'}
 	).save("graph.png")
 
