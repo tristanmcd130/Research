@@ -203,11 +203,11 @@ def plot_connections(n):
 	for pi in avoiding_321:
 		kb = KB(pi)
 		for x in K1(pi) - kb:
-			K1_edges.append((pi, x, "K1"))
+			K1_edges.append((x, pi, "K1"))
 		for x in K2(pi) - kb:
-			K2_edges.append((pi, x, "K2"))
+			K2_edges.append((x, pi, "K2"))
 		for x in kb:
-			KB_edges.append((pi, x, "KB"))
+			KB_edges.append((x, pi, "KB"))
 
 	g = DiGraph([avoiding_321, K1_edges + K2_edges + KB_edges], multiedges=True)
 	g.plot(
@@ -238,7 +238,7 @@ These are equivalent:
 - P(w) = SD(w)
 - shape of P(w) = shape of SD(w)
 - SD(w) is standard
-In the dominance partial order(???), SD(w) <= P(w).
+In the dominance partial order(?), SD(w) <= P(w).
 If shape of P(w) is:
 x x x x
 x
