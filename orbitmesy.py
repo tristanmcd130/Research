@@ -226,8 +226,7 @@ def plot_connections(n):
 		},
 		edge_colors={"red": K1_edges, "blue": K2_edges, "green": KB_edges},
 		layout="graphviz",
-		figsize=[96, 96],
-		# graphviz_opts={'splines': 'curved', 'sep': '1.0'}
+		figsize=[48, 48]
 	).save("graph.png")
 
 plot_connections(5)
