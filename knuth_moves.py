@@ -98,24 +98,31 @@ def superstandard(shape: tuple[int]) -> Tableau:
 			pass
 	return Tableau(result)
 
-# somehow make it so it only generates permutations with a given p tableau, or a superstandard p tableau for a given shape
 # allow a specific permutation as an input, then graph only the component with that in it
 # print lists of good and bad?
-def plot_connections(n, *, P=None, shape=None):
+def plot_connections(n, *, P=None, shape=None, target_pi=None):
 	assert P is None or shape is None, f"P and shape cannot both be specified"
-	assert sum(shape) == n, f"Sum of shape must be n"
+	assert shape is None or sum(shape) == n, f"Sum of shape must be n"
 	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or RSK(pi)[0] == superstandard(shape)), Permutations(n)))
+	assert target_pi is None or target_pi in S_n, f"{target_pi} is not in {S_n}"
+	pi_graph = {target_pi}
 	K1_edges = []
 	K2_edges = []
 	KB_edges = []
 	for pi in S_n:
 		kb = KB(pi)
 		for x in K1(pi) - kb:
-			K1_edges.append((pi, x, "K1"))
+			if pi is None or target_pi in {pi, x} | pi_graph:
+				K1_edges.append((pi, x, "K1"))
+				pi_graph |= {pi, x}
 		for x in K2(pi) - kb:
-			K2_edges.append((pi, x, "K2"))
+			if pi is None or target_pi in {pi, x} | pi_graph:
+				K2_edges.append((pi, x, "K2"))
+				pi_graph |= {pi, x}
 		for x in kb:
-			KB_edges.append((pi, x, "KB"))
+			if pi is None or target_pi in {pi, x} | pi_graph:
+				KB_edges.append((pi, x, "KB"))
+				pi_graph |= {pi, x}
 
 	g = DiGraph([S_n, K1_edges + K2_edges + KB_edges], multiedges=True)
 	g.plot(
@@ -126,9 +133,14 @@ def plot_connections(n, *, P=None, shape=None):
 		layout="graphviz"
 	).save("graph.png")
 
-plot_connections(7, shape=(4, 2, 1))
+plot_connections(8, shape=(5, 2, 1))
 
 """
+3/24:
+Number of descents (pi(i) > pi(i + 1)) can tell you if its bad: 
+Docker env? Make it somehow compatible with Jupyter
+Count how many times abc and abcd patterns appear and see how that affects how far away a bad is from a cluster of goods in a graph
+
 SD isnt in sage, its defined in the GHOSS25motzkin paper
 RSK is a bijection between S_n and 2 tableaux P and Q.
 Thm: 2 perms have the same P tableau iff they're related by some Knuth moves.
