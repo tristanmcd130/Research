@@ -1,4 +1,7 @@
 from sage.all import *
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+from collections import defaultdict
 
 def K1(pi: Permutation) -> set[Permutation]:
 	# If x < y < z and pi = x1...yxz..xn, then K1(pi) = x1..yzx...xn
@@ -47,7 +50,7 @@ def row_index(rows: list[list], x) -> int:
 			return i
 	raise ValueError(f"{x} not in {rows}")
 
-def abc(Q: Tableau) -> bool:
+def abc(Q: Tableau) -> int:
 	"""
 	A tableau has an abc pattern if there are 3 numbers x, y, and z such that:
 	1. x < y < z
@@ -55,16 +58,17 @@ def abc(Q: Tableau) -> bool:
 	3. z is to the right of x (but not necessarily in the same row)
 	4. y is in the same column as z or to the right of it
 	"""
+	count = 0
 	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))] # "transpose" of Q to help see if x is at the bottom of a column
 	for x, y, z, in increasing_subseqs(range(1, Q.size() + 1), 3):
 		x_row = row_index(Q_T, x)
 		y_row = row_index(Q_T, y)
 		z_row = row_index(Q_T, z)
 		if Q_T[x_row][-1] == x and z_row > x_row and y_row >= z_row:
-			return True
-	return False
+			count += 1
+	return count
 
-def abcd(Q: Tableau) -> bool:
+def abcd(Q: Tableau) -> int:
 	"""
 	A tableau has an abcd pattern if there are 4 numbers x, y, z, and w such that:
 	1. x < y < z < w
@@ -73,14 +77,15 @@ def abcd(Q: Tableau) -> bool:
 	4. z is somewhere to the right of x
 	5. y is in the same column as z or to the right of it
 	"""
+	count = 0
 	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))]
 	for x, y, z, w in increasing_subseqs(range(1, Q.size() + 1), 4):
 		x_row = row_index(Q_T, x)
 		y_row = row_index(Q_T, y)
 		z_row = row_index(Q_T, z)
 		if Q_T[x_row][-1] != x and Q_T[x_row][Q_T[x_row].index(x) + 1] == w and z_row > x_row and y_row >= z_row:
-			return True
-	return False
+			count += 1
+	return count
 
 def superstandard(shape: tuple[int]) -> Tableau:
 	result = []
@@ -148,22 +153,28 @@ def plot_connections(*,
 				pi_graph |= {pi1, pi2}
 
 	S_n = list(pi_graph)
-	good = [pi for pi in S_n if not abc(RSK(pi)[1]) and not abcd(RSK(pi)[1])]
-	bad = list(set(S_n) - set(good))
+	badness = {pi: abc(RSK(pi)[1]) + abcd(RSK(pi)[1]) for pi in S_n}
+	cmap = cm.get_cmap("viridis")
+	norm = mcolors.Normalize(vmin=0, vmax=max(badness.values()))
+	vertex_colors = defaultdict(list)
+	for pi in S_n:
+		vertex_colors[mcolors.to_hex(cmap(norm(badness[pi])))].append(pi)
 	g = DiGraph([S_n, K1_edges + K2_edges + KB_edges], multiedges=True)
 	g.plot(
-		vertex_colors={"yellow": good,},
+		vertex_colors=vertex_colors,
 		edge_colors={"red": K1_edges, "blue": K2_edges, "green": KB_edges},
 		figsize=(figsize, figsize),
 		layout="graphviz"
 	).save(filename)
 	if print_good:
+		good = [k for (k, v) in badness.items() if v == 0]
 		print(f"Good permutations ({len(good)}):")
 		for pi in good:
 			print(pi)
+		bad = list(set(S_n) - set(good))
 		print(f"\nBad permutations ({len(bad)}):")
 		for pi in bad:
-			print(pi)
+			print(f"{pi} (badness: {badness[pi]})")
 
 plot_connections(n=5, print_good=True, figsize=50)
 
