@@ -1,5 +1,5 @@
 from sage.all import *
-import matplotlib.cm as cm
+from matplotlib import colormaps as cm
 import matplotlib.colors as mcolors
 from collections import defaultdict
 
@@ -106,7 +106,7 @@ def superstandard(shape: tuple[int]) -> Tableau:
 def plot_connections(*,
 					 n: int | None = None,
 					 P: Permutation | None = None,
-					 shape: tuple[int] | None = None,
+					 shape: tuple[int, ...] | None = None,
 					 target_pi: Permutation | None = None,
 					 print_good: bool = False,
 					 figsize: int | None = 12,
@@ -118,7 +118,7 @@ def plot_connections(*,
 	- target_pi: a Permutation. Only this permutation, and all the other ones in S_n related to it via Knuth moves, will be graphed.
 
 	Optionally provide any number of these parameters:
-	- print_good: a boolean. If True, it will print all the good and bad permutations in the graph, as well as how many good and bad permutations were graphed.
+	- print_good: a boolean. If True, it will print all the good and bad permutations in the graph, how many good and bad permutations were graphed, and the "badness" of each bad permutation (number of abc patterns + abcd patterns).
 	- figsize: an integer. Making this bigger will increase the size of the graph.
 	- filename: a string. The name of the file to which the graph will be saved. You can use extensions other than .png, such as .pdf.
 	"""
