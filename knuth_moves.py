@@ -98,42 +98,74 @@ def superstandard(shape: tuple[int]) -> Tableau:
 			pass
 	return Tableau(result)
 
-# allow a specific permutation as an input, then graph only the component with that in it
-# print lists of good and bad?
-def plot_connections(n, *, P=None, shape=None, target_pi=None):
-	assert P is None or shape is None, f"P and shape cannot both be specified"
-	assert shape is None or sum(shape) == n, f"Sum of shape must be n"
+def plot_connections(*,
+					 n: int | None = None,
+					 P: Permutation | None = None,
+					 shape: tuple[int] | None = None,
+					 target_pi: Permutation | None = None,
+					 print_good: bool = False,
+					 figsize: int | None = 12,
+					 filename: str | None = "graph.png") -> None:
+	"""
+	Provide exactly 1 of the following parameters (which must be provided as keyword arguments):
+	- n: an integer. All permutations in S_n will be graphed.
+	- shape: a tuple of integers. All permutations in S_len(shape) whose P tableau has this shape will be graphed.
+	- target_pi: a Permutation. Only this permutation, and all the other ones in S_n related to it via Knuth moves, will be graphed.
+
+	Optionally provide any number of these parameters:
+	- print_good: a boolean. If True, it will print all the good and bad permutations in the graph, as well as how many good and bad permutations were graphed.
+	- figsize: an integer. Making this bigger will increase the size of the graph.
+	- filename: a string. The name of the file to which the graph will be saved. You can use extensions other than .png, such as .pdf.
+	"""
+	assert [n, P, shape, target_pi].count(None) == 3, f"Exactly 1 of n, P, shape, or target_pi must be provided"
+	if n is None:
+		if P is not None:
+			n = len(P)
+		elif shape is not None:
+			n = sum(shape)
+		elif target_pi is not None:
+			n = len(target_pi)
 	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or RSK(pi)[0] == superstandard(shape)), Permutations(n)))
 	assert target_pi is None or target_pi in S_n, f"{target_pi} is not in {S_n}"
-	pi_graph = {target_pi}
+
+	pi_graph = set() if target_pi is None else {target_pi}
 	K1_edges = []
 	K2_edges = []
 	KB_edges = []
-	for pi in S_n:
-		kb = KB(pi)
-		for x in K1(pi) - kb:
-			if pi is None or target_pi in {pi, x} | pi_graph:
-				K1_edges.append((pi, x, "K1"))
-				pi_graph |= {pi, x}
-		for x in K2(pi) - kb:
-			if pi is None or target_pi in {pi, x} | pi_graph:
-				K2_edges.append((pi, x, "K2"))
-				pi_graph |= {pi, x}
-		for x in kb:
-			if pi is None or target_pi in {pi, x} | pi_graph:
-				KB_edges.append((pi, x, "KB"))
-				pi_graph |= {pi, x}
+	for pi1 in S_n:
+		kb = KB(pi1)
+		for pi2 in K1(pi1) - kb:
+			if target_pi is None or pi1 in pi_graph or pi2 in pi_graph:
+				K1_edges.append((pi1, pi2, "K1"))
+				pi_graph |= {pi1, pi2}
+		for pi2 in K2(pi1) - kb:
+			if target_pi is None or pi1 in pi_graph or pi2 in pi_graph:
+				K2_edges.append((pi1, pi2, "K2"))
+				pi_graph |= {pi1, pi2}
+		for pi2 in kb:
+			if target_pi is None or pi1 in pi_graph or pi2 in pi_graph:
+				KB_edges.append((pi1, pi2, "KB"))
+				pi_graph |= {pi1, pi2}
 
+	S_n = list(pi_graph)
+	good = [pi for pi in S_n if not abc(RSK(pi)[1]) and not abcd(RSK(pi)[1])]
+	bad = list(set(S_n) - set(good))
 	g = DiGraph([S_n, K1_edges + K2_edges + KB_edges], multiedges=True)
 	g.plot(
-		vertex_colors={
-			"yellow": [pi for pi in S_n if not abc(RSK(pi)[1]) and not abcd(RSK(pi)[1])],
-		},
+		vertex_colors={"yellow": good,},
 		edge_colors={"red": K1_edges, "blue": K2_edges, "green": KB_edges},
+		figsize=(figsize, figsize),
 		layout="graphviz"
-	).save("graph.png")
+	).save(filename)
+	if print_good:
+		print(f"Good permutations ({len(good)}):")
+		for pi in good:
+			print(pi)
+		print(f"\nBad permutations ({len(bad)}):")
+		for pi in bad:
+			print(pi)
 
-plot_connections(8, shape=(5, 2, 1))
+plot_connections(n=5, print_good=True, figsize=50)
 
 """
 3/24:

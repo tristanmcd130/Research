@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker image inspect tristanmcd130/research > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+	docker pull tristanmcd130/research
+fi
+docker run -v .:/usr/local/app:Z -it tristanmcd130/research sage $*
