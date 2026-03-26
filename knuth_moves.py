@@ -176,7 +176,7 @@ def plot_connections(*,
 		for pi in bad:
 			print(f"{pi} (badness: {badness[pi]})")
 
-plot_connections(n=5, print_good=True, figsize=50)
+plot_connections(shape=(4, 2, 1), print_good=True, figsize=9, filename="421.png")
 
 """
 3/24:
