@@ -87,7 +87,7 @@ def abcd(Q: Tableau) -> int:
 			count += 1
 	return count
 
-def superstandard(shape: tuple[int]) -> Tableau:
+def superstandard(shape: list[int]) -> Tableau:
 	result = []
 	for n in shape:
 		result.append([0] * n)
@@ -106,7 +106,7 @@ def superstandard(shape: tuple[int]) -> Tableau:
 def plot_connections(*,
 					 n: int | None = None,
 					 P: Permutation | None = None,
-					 shape: tuple[int, ...] | None = None,
+					 shape: list[int] | None = None,
 					 target_pi: Permutation | None = None,
 					 print_good: bool = False,
 					 figsize: int | None = 12,
@@ -130,7 +130,7 @@ def plot_connections(*,
 			n = sum(shape)
 		elif target_pi is not None:
 			n = len(target_pi)
-	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or RSK(pi)[0] == superstandard(shape)), Permutations(n)))
+	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or list(RSK(pi)[0].shape()) == shape), Permutations(n)))
 	assert target_pi is None or target_pi in S_n, f"{target_pi} is not in {S_n}"
 
 	pi_graph = set() if target_pi is None else {target_pi}
@@ -176,9 +176,13 @@ def plot_connections(*,
 		for pi in bad:
 			print(f"{pi} (badness: {badness[pi]})")
 
-plot_connections(shape=(5, 2, 1), print_good=True, figsize=15, filename=f"521.png")
+plot_connections(shape=[4, 2, 1], print_good=True, figsize=15, filename=f"images/421.png")
 
 """
+3/26:
+Print out WHERE abc and abcd patterns occur
+Make shape a list of tuples, graph any permutation that has its P tableau's shape as any of those shapes
+
 3/24:
 Number of descents (pi(i) > pi(i + 1)) can tell you if its bad: 
 Docker env? Make it somehow compatible with Jupyter
