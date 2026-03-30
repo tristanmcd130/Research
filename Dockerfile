@@ -9,4 +9,5 @@ RUN conda create -n sage sage python=3.11
 SHELL ["conda", "run", "-n", "sage", "/bin/bash", "-c"]
 RUN sage -pip install dot2tex
 
-CMD ["conda", "activate", "sage"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "sage"]
+CMD ["sage"]

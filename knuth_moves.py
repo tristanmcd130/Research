@@ -50,7 +50,7 @@ def row_index(rows: list[list], x) -> int:
 			return i
 	raise ValueError(f"{x} not in {rows}")
 
-def abc(Q: Tableau) -> int:
+def abc(Q: Tableau, print_patterns: bool = False) -> int:
 	"""
 	A tableau has an abc pattern if there are 3 numbers x, y, and z such that:
 	1. x < y < z
@@ -58,6 +58,8 @@ def abc(Q: Tableau) -> int:
 	3. z is to the right of x (but not necessarily in the same row)
 	4. y is in the same column as z or to the right of it
 	"""
+	if print_patterns:
+		print(f"Occurrences of abc patterns in {Q}:")
 	count = 0
 	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))] # "transpose" of Q to help see if x is at the bottom of a column
 	for x, y, z, in increasing_subseqs(range(1, Q.size() + 1), 3):
@@ -66,9 +68,11 @@ def abc(Q: Tableau) -> int:
 		z_row = row_index(Q_T, z)
 		if Q_T[x_row][-1] == x and z_row > x_row and y_row >= z_row:
 			count += 1
+			if print_patterns:
+				print((x, y, z))
 	return count
 
-def abcd(Q: Tableau) -> int:
+def abcd(Q: Tableau, print_patterns: bool = False) -> int:
 	"""
 	A tableau has an abcd pattern if there are 4 numbers x, y, z, and w such that:
 	1. x < y < z < w
@@ -77,6 +81,8 @@ def abcd(Q: Tableau) -> int:
 	4. z is somewhere to the right of x
 	5. y is in the same column as z or to the right of it
 	"""
+	if print_patterns:
+		print(f"Occurrences of abcd patterns in {Q}:")
 	count = 0
 	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))]
 	for x, y, z, w in increasing_subseqs(range(1, Q.size() + 1), 4):
@@ -85,9 +91,11 @@ def abcd(Q: Tableau) -> int:
 		z_row = row_index(Q_T, z)
 		if Q_T[x_row][-1] != x and Q_T[x_row][Q_T[x_row].index(x) + 1] == w and z_row > x_row and y_row >= z_row:
 			count += 1
+			if print_patterns:
+				print((x, y, z, w))
 	return count
 
-def superstandard(shape: list[int]) -> Tableau:
+def superstandard(shape: tuple[int, ...]) -> Tableau:
 	result = []
 	for n in shape:
 		result.append([0] * n)
@@ -106,19 +114,22 @@ def superstandard(shape: list[int]) -> Tableau:
 def plot_connections(*,
 					 n: int | None = None,
 					 P: Permutation | None = None,
-					 shape: list[int] | None = None,
+					 shape: tuple[int, ...] | None = None,
 					 target_pi: Permutation | None = None,
 					 print_good: bool = False,
+					 print_patterns: bool = False,
 					 figsize: int | None = 12,
 					 filename: str | None = "graph.png") -> None:
 	"""
 	Provide exactly 1 of the following parameters (which must be provided as keyword arguments):
 	- n: an integer. All permutations in S_n will be graphed.
-	- shape: a tuple of integers. All permutations in S_len(shape) whose P tableau has this shape will be graphed.
+	- P: a Permutation. All permutations in S_len(P) with a P tableau equal to this will be graphed.
+	- shape: a tuple of integers. All permutations in S_len(shape) with a P tableau equal to the superstandard tableau of this shape will be graphed.
 	- target_pi: a Permutation. Only this permutation, and all the other ones in S_n related to it via Knuth moves, will be graphed.
 
 	Optionally provide any number of these parameters:
 	- print_good: a boolean. If True, it will print all the good and bad permutations in the graph, how many good and bad permutations were graphed, and the "badness" of each bad permutation (number of abc patterns + abcd patterns).
+	- print_patterns: a boolean. If True, for each permutation being considered, it will print all occurrences of abc and abcd patterns in the Q tableau.
 	- figsize: an integer. Making this bigger will increase the size of the graph.
 	- filename: a string. The name of the file to which the graph will be saved. You can use extensions other than .png, such as .pdf.
 	"""
@@ -130,7 +141,7 @@ def plot_connections(*,
 			n = sum(shape)
 		elif target_pi is not None:
 			n = len(target_pi)
-	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or list(RSK(pi)[0].shape()) == shape), Permutations(n)))
+	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or RSK(pi)[0] == superstandard(shape)), Permutations(n)))
 	assert target_pi is None or target_pi in S_n, f"{target_pi} is not in {S_n}"
 
 	pi_graph = set() if target_pi is None else {target_pi}
@@ -153,7 +164,7 @@ def plot_connections(*,
 				pi_graph |= {pi1, pi2}
 
 	S_n = list(pi_graph)
-	badness = {pi: abc(RSK(pi)[1]) + abcd(RSK(pi)[1]) for pi in S_n}
+	badness = {pi: abc(RSK(pi)[1], print_patterns) + abcd(RSK(pi)[1], print_patterns) for pi in S_n}
 	cmap = cm.get_cmap("viridis")
 	norm = mcolors.Normalize(vmin=0, vmax=max(badness.values()))
 	vertex_colors = defaultdict(list)
@@ -176,7 +187,7 @@ def plot_connections(*,
 		for pi in bad:
 			print(f"{pi} (badness: {badness[pi]})")
 
-plot_connections(shape=[4, 2, 1], print_good=True, figsize=15, filename=f"images/421.png")
+plot_connections(shape=(3, 2, 1), print_good=True, figsize=6, filename=f"images/321.png", print_patterns=True)
 
 """
 3/26:
