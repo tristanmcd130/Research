@@ -114,7 +114,7 @@ def superstandard(shape: tuple[int, ...]) -> Tableau:
 def plot_connections(*,
 					 n: int | None = None,
 					 P: Permutation | None = None,
-					 shape: tuple[int, ...] | None = None,
+					#  shape: tuple[int, ...] | None = None, (just use P=superstandard(shape) instead)
 					 target_pi: Permutation | None = None,
 					 print_good: bool = False,
 					 print_patterns: bool = False,
@@ -124,7 +124,6 @@ def plot_connections(*,
 	Provide exactly 1 of the following parameters (which must be provided as keyword arguments):
 	- n: an integer. All permutations in S_n will be graphed.
 	- P: a Permutation. All permutations in S_len(P) with a P tableau equal to this will be graphed.
-	- shape: a tuple of integers. All permutations in S_len(shape) with a P tableau equal to the superstandard tableau of this shape will be graphed.
 	- target_pi: a Permutation. Only this permutation, and all the other ones in S_n related to it via Knuth moves, will be graphed.
 
 	Optionally provide any number of these parameters:
@@ -133,15 +132,15 @@ def plot_connections(*,
 	- figsize: an integer. Making this bigger will increase the size of the graph.
 	- filename: a string. The name of the file to which the graph will be saved. You can use extensions other than .png, such as .pdf.
 	"""
-	assert [n, P, shape, target_pi].count(None) == 3, f"Exactly 1 of n, P, shape, or target_pi must be provided"
+	assert len([arg for arg in [n, P, target_pi] if arg is not None]) == 1, f"Exactly 1 of n, P, or target_pi must be provided"
 	if n is None:
 		if P is not None:
-			n = len(P)
-		elif shape is not None:
-			n = sum(shape)
+			n = P.size()
+		# elif shape is not None:
+		# 	n = sum(shape)
 		elif target_pi is not None:
 			n = len(target_pi)
-	S_n = list(filter(lambda pi: (P is None or RSK(pi)[0] == P) and (shape is None or RSK(pi)[0] == superstandard(shape)), Permutations(n)))
+	S_n = list(filter(lambda pi: P is None or RSK(pi)[0] == P, Permutations(n)))
 	assert target_pi is None or target_pi in S_n, f"{target_pi} is not in {S_n}"
 
 	pi_graph = set() if target_pi is None else {target_pi}
@@ -187,9 +186,16 @@ def plot_connections(*,
 		for pi in bad:
 			print(f"{pi} (badness: {badness[pi]})")
 
-plot_connections(shape=(3, 2, 1), print_good=True, figsize=6, filename=f"images/321.png", print_patterns=True)
+plot_connections(P=superstandard((3, 2, 1)), print_good=True, figsize=6, filename=f"images/321.png", print_patterns=True)
 
 """
+3/31:
+Consider all Q tableau where w = RSK^-1(P, Q) and P is superstandard. For n >= 7, how many of those tableau have a 1st column with height equal to the height of the 1st column of SD(w)?
+2 facts: height of the 1st column of Q = length of the longest decreasing subsequence of the permutation, and height of the 1st column of SD(w) = nummber of descents in w + 1
+For Q tableau where height(SD(w)) = height(Q), does it always avoid abcd patterns?
+How to generate these Q tableau: for each Q tableau of size n (Tableaux(n)), do w = RSK^-1(superstandard(Q.shape()), Q), then see if len(w.descents()) == height(Q)
+Learn how to do RSK by hand
+
 3/26:
 Print out WHERE abc and abcd patterns occur
 Make shape a list of tuples, graph any permutation that has its P tableau's shape as any of those shapes
