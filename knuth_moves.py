@@ -186,12 +186,13 @@ def plot_connections(*,
 		for pi in bad:
 			print(f"{pi} (badness: {badness[pi]})")
 
-plot_connections(P=superstandard((3, 2, 1)), print_good=True, figsize=6, filename=f"images/321.png", print_patterns=True)
+if __name__ == "__main__":
+	plot_connections(P=superstandard((3, 2, 1)), print_good=True, figsize=6, filename=f"images/321.png", print_patterns=True)
 
 """
 3/31:
 Consider all Q tableau where w = RSK^-1(P, Q) and P is superstandard. For n >= 7, how many of those tableau have a 1st column with height equal to the height of the 1st column of SD(w)?
-2 facts: height of the 1st column of Q = length of the longest decreasing subsequence of the permutation, and height of the 1st column of SD(w) = nummber of descents in w + 1
+2 facts: height of the 1st column of Q = length of the longest decreasing subsequence of the permutation, and height of the 1st column of SD(w) = number of descents in w + 1
 For Q tableau where height(SD(w)) = height(Q), does it always avoid abcd patterns?
 How to generate these Q tableau: for each Q tableau of size n (Tableaux(n)), do w = RSK^-1(superstandard(Q.shape()), Q), then see if len(w.descents()) == height(Q)
 Learn how to do RSK by hand
