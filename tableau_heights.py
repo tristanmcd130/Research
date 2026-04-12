@@ -13,12 +13,12 @@ def equal_heights(n: int) -> int:
 	count = 0
 	total = 0
 	for Q in StandardTableaux(n):
-		if abc(Q) + abcd(Q) > 0:
+		if len(abc(Q) | abcd(Q)) > 0:
 			w = Permutation(RSK_inverse(superstandard(tuple(Q.shape())), Q)[1])
 			if Q.height() == len(w.descents()) + 1:
 				# print(f"{Q} has height equal to height(SD(w))", end="")
 				count += 1
-				if abcd(Q) > 0:
+				if len(abcd(Q)) > 0:
 					abcd_count += 1
 					print(f"{Q} has abcd patterns")
 				# print()

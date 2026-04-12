@@ -50,7 +50,7 @@ def row_index(rows: list[list], x) -> int:
 			return i
 	raise ValueError(f"{x} not in {rows}")
 
-def abc(Q: Tableau, print_patterns: bool = False) -> int:
+def abc(Q: Tableau, print_patterns: bool = False) -> set[tuple[int, int, int]]:
 	"""
 	A tableau has an abc pattern if there are 3 numbers x, y, and z such that:
 	1. x < y < z
@@ -60,19 +60,22 @@ def abc(Q: Tableau, print_patterns: bool = False) -> int:
 	"""
 	if print_patterns:
 		print(f"Occurrences of abc patterns in {Q}:")
-	count = 0
+	patterns = set()
 	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))] # "transpose" of Q to help see if x is at the bottom of a column
 	for x, y, z, in increasing_subseqs(range(1, Q.size() + 1), 3):
-		x_row = row_index(Q_T, x)
-		y_row = row_index(Q_T, y)
-		z_row = row_index(Q_T, z)
-		if Q_T[x_row][-1] == x and z_row > x_row and y_row >= z_row:
-			count += 1
+		x_col = row_index(Q_T, x)
+		y_col = row_index(Q_T, y)
+		z_col = row_index(Q_T, z)
+		if Q_T[x_col][-1] == x and z_col > x_col and y_col >= z_col:
+			patterns.add((x, y, z))
 			if print_patterns:
 				print((x, y, z))
-	return count
+	return patterns
 
-def abcd(Q: Tableau, print_patterns: bool = False) -> int:
+def tableau_transpose(Q: Tableau) -> list[list[int]]:
+	return [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))]
+
+def abcd(Q: Tableau, print_patterns: bool = False) -> set[tuple[int, int, int, int]]:
 	"""
 	A tableau has an abcd pattern if there are 4 numbers x, y, z, and w such that:
 	1. x < y < z < w
@@ -83,17 +86,17 @@ def abcd(Q: Tableau, print_patterns: bool = False) -> int:
 	"""
 	if print_patterns:
 		print(f"Occurrences of abcd patterns in {Q}:")
-	count = 0
-	Q_T = [[row[i] for row in Q if i < len(row)] for i in range(max(Q.shape()))]
+	patterns = set()
+	Q_T = tableau_transpose(Q)
 	for x, y, z, w in increasing_subseqs(range(1, Q.size() + 1), 4):
-		x_row = row_index(Q_T, x)
-		y_row = row_index(Q_T, y)
-		z_row = row_index(Q_T, z)
-		if Q_T[x_row][-1] != x and Q_T[x_row][Q_T[x_row].index(x) + 1] == w and z_row > x_row and y_row >= z_row:
-			count += 1
+		x_col = row_index(Q_T, x)
+		y_col = row_index(Q_T, y)
+		z_col = row_index(Q_T, z)
+		if Q_T[x_col][-1] != x and Q_T[x_col][Q_T[x_col].index(x) + 1] == w and z_col > x_col and y_col >= z_col:
+			patterns.add((x, y, z, w))
 			if print_patterns:
 				print((x, y, z, w))
-	return count
+	return patterns
 
 def superstandard(shape: tuple[int, ...]) -> Tableau:
 	result = []
@@ -163,7 +166,7 @@ def plot_connections(*,
 				pi_graph |= {pi1, pi2}
 
 	S_n = list(pi_graph)
-	badness = {pi: abc(RSK(pi)[1], print_patterns) + abcd(RSK(pi)[1], print_patterns) for pi in S_n}
+	badness = {pi: len(abc(RSK(pi)[1], print_patterns) | abcd(RSK(pi)[1], print_patterns)) for pi in S_n}
 	cmap = cm.get_cmap("viridis")
 	norm = mcolors.Normalize(vmin=0, vmax=max(badness.values()))
 	vertex_colors = defaultdict(list)
