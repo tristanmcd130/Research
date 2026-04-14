@@ -1,42 +1,37 @@
 from sage.all import *
 from knuth_moves import *
+from collections import Counter
+import matplotlib.pyplot as plt
 
 def superstandard_word(Q: Tableau) -> Permutation:
 	return Permutation(RSK_inverse(superstandard(Q.shape()), Q)[1])
 
 if __name__ == "__main__":
-	for n in range(4, 11):
-		sd_height = 0
-		no_1st_column_abcd = 0
-		sd_height_implies_no_1st_column_abcd = 0
-		no_1st_column_abcd_implies_sd_height = 0
-		bad = 0
-		for Q in StandardTableaux(n):
-			w = superstandard_word(Q)
-			abc_patterns = abc(Q)
-			abcd_patterns = abcd(Q)
-			if len(abc_patterns | abcd_patterns) > 0:
-				# print(f"{Q} is bad")
-				bad += 1
-				same_height_as_sd = Q.height() == w.number_of_descents() + 1
-				no_abcd_patterns_in_1st_column = not any(map(lambda x: x[0] in tableau_transpose(Q)[0], abc_patterns | abcd_patterns))
-				if same_height_as_sd:
-					sd_height += 1
-				if no_abcd_patterns_in_1st_column:
-					no_1st_column_abcd += 1
-				if not same_height_as_sd or no_abcd_patterns_in_1st_column:
-					# print(f"Same height as SD(w) => no abcd patterns with x in 1st column")
-					sd_height_implies_no_1st_column_abcd += 1
-				if not no_abcd_patterns_in_1st_column or same_height_as_sd:
-					# print(f"No abcd patterns with x in 1st column => same height as SD(w)")
-					no_1st_column_abcd_implies_sd_height += 1
-				print(f"{Q} has {len(abcd_patterns)} abcd patterns and {w.number_of_descents()} descents")
-		print(f"n = {n}:")
-		print(f"# of tableau with same height as SD(w): {sd_height}")
-		print(f"# of tableau with no abcd patterns with x in 1st column: {no_1st_column_abcd}")
-		print(f"# of tableau where same height as SD(w) => no abcd patterns with x in 1st column: {sd_height_implies_no_1st_column_abcd}")
-		print(f"# of tableau where no abcd patterns with x in 1st column => same height as SD(w): {no_1st_column_abcd_implies_sd_height}")
-		print(f"# of bad tableau: {bad}\n")
+	counter = Counter()
+	for Q in StandardTableaux(10):
+		w = superstandard_word(Q)
+		abc_patterns = abc(Q)
+		abcd_patterns = abcd(Q)
+		abcd_patterns_in_1st_column = len([p[0] in tableau_transpose(Q)[0] for p in abc_patterns | abcd_patterns])
+		height_diff_from_sd = abs(Q.height() - (w.number_of_descents() + 1))
+		counter[(abcd_patterns_in_1st_column, height_diff_from_sd)] += 1
+		# if len(abc_patterns | abcd_patterns) > 0:
+		# 	print(f"{Q} has {abcd_patterns_in_1st_column} abc(d) patterns involving the 1st column, and a height difference of {height_diff_from_sd} from SD(w)")
+		# 	if abcd_patterns_in_1st_column != height_diff_from_sd:
+		# 		print(f"abc patterns: {abc_patterns}")
+		# 		print(f"abcd patterns: {abcd_patterns}")
+	max_x = max([x for (x, _) in counter.keys()])
+	max_y = max([y for (_, y) in counter.keys()])
+	data = [[0 for _ in range(max_x + 1)] for _ in range(max_y + 1)]
+	fig, ax = plt.subplots()
+	for ((x, y), v) in counter.items():
+		data[y][x] = v
+		ax.text(x, y, str(v), ha="center", va="center", color="w")
+	im = ax.imshow(data)
+	ax.set_xlabel("Number of abc(d) patterns in 1st column")
+	ax.set_ylabel("Height difference from SD(w)")
+	fig.tight_layout()
+	plt.show()
 
 """
 4/14:
