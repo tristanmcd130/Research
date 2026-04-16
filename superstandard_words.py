@@ -12,7 +12,7 @@ if __name__ == "__main__":
 		w = superstandard_word(Q)
 		abc_patterns = abc(Q)
 		abcd_patterns = abcd(Q)
-		abcd_patterns_in_1st_column = len([p[0] in tableau_transpose(Q)[0] for p in abc_patterns | abcd_patterns])
+		abcd_patterns_in_1st_column = len([p for p in abc_patterns | abcd_patterns if p[0] in tableau_transpose(Q)[0]])
 		height_diff_from_sd = abs(Q.height() - (w.number_of_descents() + 1))
 		counter[(abcd_patterns_in_1st_column, height_diff_from_sd)] += 1
 		# if len(abc_patterns | abcd_patterns) > 0:
@@ -30,10 +30,16 @@ if __name__ == "__main__":
 	im = ax.imshow(data)
 	ax.set_xlabel("Number of abc(d) patterns in 1st column")
 	ax.set_ylabel("Height difference from SD(w)")
+	ax.set_xticks(range(max_x + 1))
+	ax.set_yticks(range(max_y + 1))
 	fig.tight_layout()
 	plt.show()
 
 """
+4/16:
+write bbs code
+try to find "equivalence classes" between abc(d) patterns such that the number of classes present in a tableau = difference in height between Q and SD(w)
+
 4/14:
 (dominance partial order: if (p_1, p_2... p_m) and (q_1, q_2... q_n) are shapes of a tableau, then p <= q iff for all k >= 1, sum from i = 1 to k of p_i <= sum from i = 1 to k of q_i)
 proving descents(w) + 1 == height(Q) => 1st column of Q has no abc(d) patterns:

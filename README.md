@@ -4,6 +4,8 @@ What each file contains:
 
 - `orbitmesy.py`: Exc and its inverse, rowmotion for 321 and 123-avoiding permutations, conversions from Dyck Paths to these types of permutations, and the other way around.
 - `knuth_moves.py`: Implementations of Knuth moves K1, K2, and KB, detection of whether a tableau is good or bad, a function to generate the superstandard tableau of a given shape, and a function that plots how permutations are related via Knuth moves.
+- `tableau_heights.py`: Possibly not needed anymore. Calculates how many bad tableaux of a certain size have height equal to their soliton decomposition's height.
+- `superstandard_words.py`: Superstandard words for tableaux, testing some hypotheses about number of abc(d) patterns and heights of SD(w).
 - `graph.png`: Sample output from knuth_moves.py.
 - `Dockerfile`: Don't change this, but I think it needs to be here.
 - `run_sage`: A script to make running the Docker image easier.
