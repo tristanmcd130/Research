@@ -1,4 +1,5 @@
 1. Connecting the Definitions
+
 First, let's translate the terms into properties of the tableau $Q$ itself:
 *   $h(Q)$: The height of the 1st column of $Q$. Under RSK, this equals the length of the longest decreasing subsequence (LDS) of $w$.
 *   $c(Q)$: The number of descents in $Q$ (an index $i$ is a descent if $i+1$ appears in a strictly lower row than $i$). By standard RSK theory, the descents of $w$ are exactly the descents of $Q$. Therefore, the "height of the soliton decomposition of $w$" is exactly $c(Q) + 1$.
@@ -6,14 +7,16 @@ First, let's translate the terms into properties of the tableau $Q$ itself:
 Your conjecture simplifies to: $c(Q) = h(Q) - 1$ if and only if $Q$ contains no abc or abcd patterns where the smallest element $x$ is in the 1st column.
 
 2. The Core Lemma of Standard Tableaux
+
 To prove this, we rely on a fundamental property of standard tableaux:
 For any consecutive entries $y$ and $z = y+1$, exactly one of the following is true:
-1.  Ascent: $z$ is placed in a strictly higher column and weakly lower row than $y$ ($C(z) > C(y)$ and $R(z) \le R(y)$).
-2.  Descent: $z$ is placed in a weakly lower column and strictly higher row than $y$ ($C(z) \le C(y)$ and $R(z) > R(y)$).
+1.  Ascent: $z$ is placed in a strictly higher column and weakly lower row than $y$: $C(z) > C(y)$ and $R(z) \le R(y)$.
+2.  Descent: $z$ is placed in a weakly lower column and strictly higher row than $y$: $C(z) \le C(y)$ and $R(z) > R(y)$.
 
 This means $y$ is a descent if and only if $C(y+1) \le C(y)$. 
 
 3. The Mandatory Descents
+
 Let the elements in the 1st column of $Q$ be $v_0 < v_1 < \dots < v_{h-1}$. 
 Because $v_k$ is in the 1st column, $C(v_k) = 0$. 
 
@@ -25,6 +28,7 @@ There are exactly $h(Q) - 1$ such mandatory descents (one entering each cell of 
 Having $c(Q) = h(Q) - 1$ means that these mandatory descents are the only descents in the entire tableau. Any other descent is an "extra" descent.
 
 4. Extra Descents $\iff$ Forbidden Patterns
+
 Now we just map the existence of an "extra" descent directly to your forbidden patterns.
 
 Case A: An extra descent occurs after the 1st column is finished
