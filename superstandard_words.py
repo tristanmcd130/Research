@@ -36,6 +36,11 @@ if __name__ == "__main__":
 	plt.show()
 
 """
+4/30:
+lemma: k is a descent in u2 iff k is a descent in standardize(cut(Q, 2))
+conjecture: height(2nd col of SD(w)) = height(2nd col of Q) iff there are no abc(d) patterns with a in 2nd col of Q
+make a function in bbs.py that takes a tableau, converts it to superstandard word, then passes it through SD
+
 4/16:
 write bbs code
 try to find "equivalence classes" between abc(d) patterns such that the number of classes present in a tableau = difference in height between Q and SD(w)

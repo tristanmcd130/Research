@@ -14,7 +14,7 @@ def SD(pi: Permutation) -> Tableau:
 			boxes[i] = 0
 			while boxes[0] == 0:
 				boxes.pop(0)
-			print(boxes)
+			# print(boxes)
 	solitons = []
 	while len(boxes) > 0:
 		solitons.append([])
