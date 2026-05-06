@@ -16,7 +16,6 @@ def cut(Q: Tableau, n: int) -> Tableau:
 if __name__ == "__main__":
 	counter = Counter()
 	for Q in StandardTableaux(10):
-		w = superstandard_word(Q)
 		abc_patterns = abc(Q)
 		abcd_patterns = abcd(Q)
 		bad_patterns = len([p for p in abc_patterns | abcd_patterns if p[0] in tableau_transpose(Q)[0]])
