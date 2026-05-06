@@ -1,10 +1,17 @@
 from sage.all import *
 from knuth_moves import *
+from bbs import *
 from collections import Counter
 import matplotlib.pyplot as plt
 
 def superstandard_word(Q: Tableau) -> Permutation:
 	return Permutation(RSK_inverse(superstandard(Q.shape()), Q)[1])
+
+def SD_tableau(Q: Tableau) -> Tableau:
+	return SD(superstandard_word(Q))
+
+def cut(Q: Tableau, n: int) -> Tableau:
+	return Tableau([row[n - 1 : ] for row in Q if len(row) - n + 1 > 0])
 
 if __name__ == "__main__":
 	counter = Counter()
@@ -12,14 +19,9 @@ if __name__ == "__main__":
 		w = superstandard_word(Q)
 		abc_patterns = abc(Q)
 		abcd_patterns = abcd(Q)
-		abcd_patterns_in_1st_column = len([p for p in abc_patterns | abcd_patterns if p[0] in tableau_transpose(Q)[0]])
-		height_diff_from_sd = abs(Q.height() - (w.number_of_descents() + 1))
-		counter[(abcd_patterns_in_1st_column, height_diff_from_sd)] += 1
-		# if len(abc_patterns | abcd_patterns) > 0:
-		# 	print(f"{Q} has {abcd_patterns_in_1st_column} abc(d) patterns involving the 1st column, and a height difference of {height_diff_from_sd} from SD(w)")
-		# 	if abcd_patterns_in_1st_column != height_diff_from_sd:
-		# 		print(f"abc patterns: {abc_patterns}")
-		# 		print(f"abcd patterns: {abcd_patterns}")
+		bad_patterns = len([p for p in abc_patterns | abcd_patterns if p[0] in tableau_transpose(Q)[0]])
+		height_diff = abs(SD_tableau(Q).height() + cut(SD_tableau(Q), 2).height() - Q.height() - cut(Q, 2).height())
+		counter[(bad_patterns, height_diff)] += 1
 	max_x = max([x for (x, _) in counter.keys()])
 	max_y = max([y for (_, y) in counter.keys()])
 	data = [[0 for _ in range(max_x + 1)] for _ in range(max_y + 1)]
@@ -28,8 +30,8 @@ if __name__ == "__main__":
 		data[y][x] = v
 		ax.text(x, y, str(v), ha="center", va="center", color="w")
 	im = ax.imshow(data)
-	ax.set_xlabel("Number of abc(d) patterns in 1st column")
-	ax.set_ylabel("Height difference from SD(w)")
+	ax.set_xlabel("Number of bad patterns")
+	ax.set_ylabel("Height difference between 1st 2 columns of SD(w) and Q")
 	ax.set_xticks(range(max_x + 1))
 	ax.set_yticks(range(max_y + 1))
 	fig.tight_layout()
